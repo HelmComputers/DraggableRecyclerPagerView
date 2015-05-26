@@ -6,7 +6,7 @@ Created by Helm  21/5/15.
 package cat.helm.draggablerecyclerpagerview;
 
 import android.content.Context;
-import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -19,6 +19,8 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     float lastScrolledX;
     private int lastVisibleItemPosition;
     private int itemsCount = -1;
+    private static final int LEFT  = 0;
+    private static final int RIGHT = 1;
 
     public DraggableRecyclerPagerView(Context context) {
         super(context);
@@ -35,11 +37,6 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         init();
     }
 
-    @Override
-    protected void dispatchDraw(Canvas canvas) {
-        super.dispatchDraw(canvas);
-    }
-
     private void init() {
         if (!isInEditMode()) {
             gestureScanner = new GestureDetector(getContext(), this);
@@ -47,27 +44,47 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(itemsCount == -1){
-                    itemsCount = ((ScrollingGridLayoutManager) getLayoutManager()).getColumnCount();
-                    itemsCount *= ((ScrollingGridLayoutManager) getLayoutManager()).getRowCount();
-                    lastVisibleItemPosition = itemsCount - 1;
-                }
+                setUpItemsCount();
                 boolean specialEventUsed = gestureScanner.onTouchEvent(event);
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     lastScrolledX = event.getX();
-                }else if(event.getAction() == MotionEvent.ACTION_UP) {
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     lastScrolledX -= event.getX();
                 }
                 if (!specialEventUsed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
-                    scrollToPage();
+                    float lastScrolledXAbs = Math.abs(lastScrolledX);
+                    if (lastScrolledXAbs < getMeasuredWidth() / 3) {
+                        scrollToCurrentPage();
+                    } else {
+                        scrollToPage();
+                    }
                     return true;
-                }else {
+                } else {
                     return specialEventUsed;
                 }
             }
         });
     }
+    private void setUpItemsCount() {
+        if(itemsCount == -1){
+            itemsCount = ((ScrollingGridLayoutManager) getLayoutManager()).getColumnCount();
+            itemsCount *= ((ScrollingGridLayoutManager) getLayoutManager()).getRowCount();
+            lastVisibleItemPosition = itemsCount - 1;
+        }
+    }
 
+    private void scrollToCurrentPage() {
+        if (getScrollDirection() == LEFT) {
+            smoothScrollToPosition(lastVisibleItemPosition);
+        } else {
+            smoothScrollToPosition(lastVisibleItemPosition);
+            Rect r = new Rect();
+            View view = getChildAt(itemsCount + 1);
+            view.getLocalVisibleRect(r);
+            int leftMargin = ((MarginLayoutParams) view.getLayoutParams()).leftMargin;
+            smoothScrollBy(-r.width() - leftMargin, 0);
+        }
+    }
 
     private void scrollToPage() {
         if(lastScrolledX > 0) {
@@ -116,4 +133,11 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         return false;
     }
 
+    public int getScrollDirection() {
+        if(lastScrolledX < 0){
+            return LEFT;
+        }else {
+            return  RIGHT;
+        }
+    }
 }
