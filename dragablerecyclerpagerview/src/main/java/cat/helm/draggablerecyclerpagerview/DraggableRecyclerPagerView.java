@@ -44,17 +44,13 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                setUpItemsCount();
                 boolean specialEventUsed = gestureScanner.onTouchEvent(event);
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    lastScrolledX = event.getX();
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    lastScrolledX -= event.getX();
-                }
+                setUpItemsCount();
+                computeLastScrollX(event);
                 if (!specialEventUsed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
                     float lastScrolledXAbs = Math.abs(lastScrolledX);
                     if (lastScrolledXAbs < getMeasuredWidth() / 3) {
-                        scrollToCurrentPage();
+                        reverseScroll();
                     } else {
                         scrollToPage();
                     }
@@ -65,6 +61,15 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
             }
         });
     }
+
+    private void computeLastScrollX(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            lastScrolledX = event.getX();
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            lastScrolledX -= event.getX();
+        }
+    }
+
     private void setUpItemsCount() {
         if(itemsCount == -1){
             itemsCount = ((ScrollingGridLayoutManager) getLayoutManager()).getColumnCount();
@@ -73,7 +78,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         }
     }
 
-    private void scrollToCurrentPage() {
+    private void reverseScroll() {
         if (getScrollDirection() == LEFT) {
             smoothScrollToPosition(lastVisibleItemPosition);
         } else {
@@ -87,15 +92,23 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     }
 
     private void scrollToPage() {
-        if(lastScrolledX > 0) {
-            int scrollTo = lastVisibleItemPosition + itemsCount;
-            smoothScrollToPosition(scrollTo);
-            lastVisibleItemPosition = scrollTo;
+        if(getScrollDirection() == RIGHT) {
+            scrollNextPage();
         }else {
-            int scrollTo = lastVisibleItemPosition - (itemsCount * 2 - 1) <= 0 ? 0 :lastVisibleItemPosition-(itemsCount * 2 - 1);
-            smoothScrollToPosition(scrollTo);
-            lastVisibleItemPosition = scrollTo + (itemsCount - 1);
+            scrollPreviousPage();
         }
+    }
+
+    private void scrollPreviousPage() {
+        int scrollTo = lastVisibleItemPosition - (itemsCount * 2 - 1) <= 0 ? 0 :lastVisibleItemPosition-(itemsCount * 2 - 1);
+        smoothScrollToPosition(scrollTo);
+        lastVisibleItemPosition = scrollTo + (itemsCount - 1);
+    }
+
+    private void scrollNextPage() {
+        int scrollTo = lastVisibleItemPosition + itemsCount;
+        smoothScrollToPosition(scrollTo);
+        lastVisibleItemPosition = scrollTo;
     }
 
     @Override
@@ -130,11 +143,16 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        return false;
+        if((e1.getX()-e2.getX()) > 0){
+            scrollNextPage();
+        }else{
+            scrollPreviousPage();
+        }
+        return true;
     }
 
     public int getScrollDirection() {
-        if(lastScrolledX < 0){
+        if(lastScrolledX <= 0){
             return LEFT;
         }else {
             return  RIGHT;
