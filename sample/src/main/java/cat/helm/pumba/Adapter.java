@@ -17,7 +17,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
 
 
     private final List<String> items;
-    private ViewGroup.LayoutParams layoutParams;
 
     public Adapter(List<String> items) {
         this.items = items;
@@ -41,7 +40,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
         public TextView mTextView;
         public ViewHolder(TextView v) {
             super(v);
