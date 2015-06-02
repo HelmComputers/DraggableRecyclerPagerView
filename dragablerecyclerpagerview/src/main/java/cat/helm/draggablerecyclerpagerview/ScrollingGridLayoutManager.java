@@ -8,10 +8,11 @@ package cat.helm.draggablerecyclerpagerview;
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class ScrollingGridLayoutManager extends GridLayoutManager {
+public class ScrollingGridLayoutManager extends GridLayoutManager implements ItemTouchHelper.ViewDropHandler{
     private final int rows;
     private int columns;
 
@@ -37,4 +38,6 @@ public class ScrollingGridLayoutManager extends GridLayoutManager {
     public int getRowCount() {
         return rows;
     }
+
+
 }

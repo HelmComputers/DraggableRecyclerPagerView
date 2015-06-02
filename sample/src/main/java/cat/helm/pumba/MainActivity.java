@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.inject(this);
         List<String> items = createItems();
         ScrollingGridLayoutManager gridLayoutManager = new ScrollingGridLayoutManager(this, 2,3, false);
-        Adapter adapter = new Adapter(items);
+        Adapter adapter = new Adapter(draggableRecyclerPagerView,items);
         draggableRecyclerPagerView.setLayoutManager(gridLayoutManager);
         draggableRecyclerPagerView.setAdapter(adapter);
     }

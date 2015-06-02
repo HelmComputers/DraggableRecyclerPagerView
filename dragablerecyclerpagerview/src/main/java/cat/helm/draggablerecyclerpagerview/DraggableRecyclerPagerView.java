@@ -22,6 +22,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     private int itemsCount = -1;
     private static final int LEFT = 0;
     private static final int RIGHT = 1;
+    private boolean trobat = false;
 
     public DraggableRecyclerPagerView(Context context) {
         super(context);
@@ -39,13 +40,13 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     }
 
     private void init() {
-        if (!isInEditMode()) {
+     /*   if (!isInEditMode()) {
             gestureScanner = new GestureDetector(getContext(), this);
         }
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                boolean specialEventUsed = gestureScanner.onTouchEvent(event);
+          /*      boolean specialEventUsed = gestureScanner.onTouchEvent(event);
                 setUpItemsCount();
                 computeLastScrollX(event);
                 if (!specialEventUsed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
@@ -60,7 +61,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
                     return specialEventUsed;
                 }
             }
-        });
+        });*/
     }
 
     private void computeLastScrollX(MotionEvent event) {
@@ -86,9 +87,11 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
             smoothScrollToPosition(lastVisibleItemPosition);
             Rect r = new Rect();
             View view = getChildAt(itemsCount + 1);
-            view.getLocalVisibleRect(r);
-            int leftMargin = ((MarginLayoutParams) view.getLayoutParams()).leftMargin;
-            smoothScrollBy(-r.width() - leftMargin, 0);
+            if(view != null) {
+                view.getLocalVisibleRect(r);
+                int leftMargin = ((MarginLayoutParams) view.getLayoutParams()).leftMargin;
+                smoothScrollBy(-r.width() - leftMargin, 0);
+            }
         }
     }
 
@@ -106,9 +109,9 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         lastVisibleItemPosition = scrollTo + (itemsCount - 1);
     }
 
-    private void scrollNextPage() {
+    public void scrollNextPage() {
         int scrollTo = lastVisibleItemPosition + itemsCount;
-        smoothScrollToPosition(scrollTo);
+        scrollToPosition(scrollTo);
         lastVisibleItemPosition = scrollTo;
     }
 
@@ -148,6 +151,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
             scrollNextPage();
             return true;
 
+
         } else if (e1.getX() - e2.getX() < 0 && velocityX > DEFAULT_VELOCITY) {
             scrollPreviousPage();
             return true;
@@ -162,5 +166,8 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         } else {
             return RIGHT;
         }
+
     }
+
+
 }
