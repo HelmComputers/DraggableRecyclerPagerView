@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,12 +17,12 @@ import android.view.View;
 public class DraggableRecyclerPagerView extends RecyclerView implements GestureDetector.OnGestureListener {
 
     public static final int DEFAULT_VELOCITY = 500;
-    private GestureDetector gestureScanner;
-    float lastScrolledX;
-    private int lastVisibleItemPosition;
-    private int itemsCount = -1;
     private static final int LEFT = 0;
     private static final int RIGHT = 1;
+    float lastScrolledX;
+    private GestureDetector gestureScanner;
+    private int lastVisibleItemPosition;
+    private int itemsCount = -1;
 
     public DraggableRecyclerPagerView(Context context) {
         super(context);
@@ -48,9 +49,10 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
                 boolean specialEventUsed = gestureScanner.onTouchEvent(event);
                 setUpItemsCount();
                 computeLastScrollX(event);
+                if(lastScrolledX == 0.0) return false;
                 if (!specialEventUsed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
                     float lastScrolledXAbs = Math.abs(lastScrolledX);
-                    if (lastScrolledXAbs < getMeasuredWidth() / 2) {
+                    if (lastScrolledXAbs < getMeasuredWidth() / 3) {
                         reverseScroll();
                     } else {
                         scrollToPage();
@@ -86,9 +88,11 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
             smoothScrollToPosition(lastVisibleItemPosition);
             Rect r = new Rect();
             View view = getChildAt(itemsCount + 1);
-            view.getLocalVisibleRect(r);
-            int leftMargin = ((MarginLayoutParams) view.getLayoutParams()).leftMargin;
-            smoothScrollBy(-r.width() - leftMargin, 0);
+            if (view != null) {
+                view.getLocalVisibleRect(r);
+                int leftMargin = ((MarginLayoutParams) view.getLayoutParams()).leftMargin;
+                smoothScrollBy(-r.width() - leftMargin, 0);
+            }
         }
     }
 
@@ -100,16 +104,17 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         }
     }
 
-    private void scrollPreviousPage() {
+    public void scrollPreviousPage() {
         int scrollTo = lastVisibleItemPosition - (itemsCount * 2 - 1) <= 0 ? 0 : lastVisibleItemPosition - (itemsCount * 2 - 1);
         smoothScrollToPosition(scrollTo);
         lastVisibleItemPosition = scrollTo + (itemsCount - 1);
     }
 
-    private void scrollNextPage() {
+    public void scrollNextPage() {
         int scrollTo = lastVisibleItemPosition + itemsCount;
         smoothScrollToPosition(scrollTo);
         lastVisibleItemPosition = scrollTo;
+
     }
 
     @Override
@@ -129,6 +134,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
+        Log.e("pastis", "clicked in RV not ADapter");
         return false;
     }
 
@@ -139,25 +145,31 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     }
 
     @Override
-    public void onLongPress(MotionEvent e) {
+    public void onLongPress(MotionEvent motionEvent) {
+
     }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if ((e1.getX() - e2.getX()) > 0 && velocityX < -DEFAULT_VELOCITY) {
-            scrollNextPage();
-            return true;
+        if (e1 != null && e2 != null) {
+            float x1, x2;
+            x1 = e1.getX();
+            x2 = e2.getX();
+            if ((x1 - x2) > 0 && velocityX < -DEFAULT_VELOCITY) {
+                scrollNextPage();
+                return true;
 
-        } else if (e1.getX() - e2.getX() < 0 && velocityX > DEFAULT_VELOCITY) {
-            scrollPreviousPage();
-            return true;
+            } else if (x1 - x2 < 0 && velocityX > DEFAULT_VELOCITY) {
+                scrollPreviousPage();
+                return true;
 
+            }
         }
         return false;
     }
 
     public int getScrollDirection() {
-        if (lastScrolledX <= 0) {
+        if (lastScrolledX < 0) {
             return LEFT;
         } else {
             return RIGHT;

@@ -21,17 +21,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
-        List<String> items = createItems();
+        List<Integer> items = createItems();
         ScrollingGridLayoutManager gridLayoutManager = new ScrollingGridLayoutManager(this, 2,3, false);
-        Adapter adapter = new Adapter(items);
+        ExampleAdapter adapter = new ExampleAdapter(draggableRecyclerPagerView, items);
         draggableRecyclerPagerView.setLayoutManager(gridLayoutManager);
         draggableRecyclerPagerView.setAdapter(adapter);
     }
 
-    private List<String> createItems() {
-        List<String> items = new ArrayList<>();
+    private List<Integer> createItems() {
+        List<Integer> items = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
-            items.add(String.valueOf(i));
+            items.add(i);
         }
         return items;
     }
