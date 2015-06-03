@@ -21,6 +21,7 @@ public class ScrollingGridLayoutManager extends GridLayoutManager implements Ite
         super(context, rows, LinearLayoutManager.HORIZONTAL, reverseLayout);
         this.columns = columns;
         this.rows = rows;
+
     }
 
     @Override
@@ -38,6 +39,5 @@ public class ScrollingGridLayoutManager extends GridLayoutManager implements Ite
     public int getRowCount() {
         return rows;
     }
-
 
 }
