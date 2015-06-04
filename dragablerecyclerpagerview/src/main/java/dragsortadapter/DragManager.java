@@ -5,9 +5,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.DragEvent;
 import android.view.View;
-import java.lang.ref.WeakReference;
-
 import cat.helm.draggablerecyclerpagerview.DraggableRecyclerPagerView;
+
+import java.lang.ref.WeakReference;
 
 import static java.lang.Float.MIN_VALUE;
 
@@ -75,11 +75,11 @@ final class DragManager implements View.OnDragListener {
                       recyclerView.scrollToPosition(0);
                     }
 
-                    recyclerView.post(new Runnable() {
-                      @Override public void run() {
+                 //   recyclerView.post(new Runnable() {
+                    //@Override public void run() {
                         adapter.notifyItemMoved(fromPosition, toPosition);
-                      }
-                    });
+                      //}
+                    //});
                   }
                 }
 

@@ -8,6 +8,7 @@ package cat.helm.draggablerecyclerpagerview;
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -36,5 +37,20 @@ public class ScrollingGridLayoutManager extends GridLayoutManager {
 
     public int getRowCount() {
         return rows;
+    }
+
+    @Override
+    public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+        super.onLayoutChildren(recycler, state);
+        final int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            final LayoutParams lp = (LayoutParams) getChildAt(i).getLayoutParams();
+            final int viewPosition = lp.getViewLayoutPosition();
+        }
+    }
+
+    @Override
+    public void measureChild(View child, int widthUsed, int heightUsed) {
+        super.measureChild(child, widthUsed, heightUsed);
     }
 }
