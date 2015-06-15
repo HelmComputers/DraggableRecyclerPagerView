@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package dragsortadapter;
+package com.makeramen.dragsortadapter;
 
 import android.graphics.Canvas;
 import android.graphics.Point;

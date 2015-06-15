@@ -6,10 +6,11 @@
     >
 
 
-    <android.support.v7.widget.RecyclerView
+    <view
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="16dp"
+            class="cat.helm.draggablerecyclerpagerview.DraggableRecyclerPagerView"
             android:id="@+id/recycler"
-
         />
 </RelativeLayout>

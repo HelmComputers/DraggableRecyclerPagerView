@@ -1,11 +1,12 @@
-package dragsortadapter;
+package com.makeramen.dragsortadapter;
 
 import android.graphics.PointF;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
-import cat.helm.draggablerecyclerpagerview.DraggableRecyclerPagerView;
 
 import java.lang.ref.WeakReference;
 
@@ -24,10 +25,28 @@ final class DragManager implements View.OnDragListener {
     this.adapter = adapter;
   }
 
-  @Override public boolean onDrag(View v, DragEvent event) {
+
+  DragEvent lastEvent;
+  Handler nextPageHandler = new Handler();
+  Runnable runnable = new Runnable() {
+    @Override
+    public void run() {
+      Log.i("onDrag", "runing ");
+      adapter.handleDragScroll(recyclerViewRef.get(), lastDragInfo);
+      nextPageHandler.removeCallbacks(runnable);
+      nextPageHandler.postDelayed(runnable,500);
+    }
+  };
+
+
+  @Override public boolean onDrag(View v, final DragEvent event) {
     if (v != recyclerViewRef.get() || !(event.getLocalState() instanceof DragInfo)) {
       return false;
     }
+
+    Log.i("DragManager", "onDrag " + "remove");
+    lastEvent = event;
+
     final RecyclerView recyclerView = (RecyclerView) v;
     final DragInfo dragInfo = (DragInfo) event.getLocalState();
     final long itemId = dragInfo.itemId();
@@ -68,13 +87,12 @@ final class DragManager implements View.OnDragListener {
                 if (child != null) {
                   final int toPosition =
                       recyclerView.getChildViewHolder(child).getAdapterPosition();
-                  if (adapter.move(fromPosition, toPosition)) {
+                 if (adapter.move(fromPosition, toPosition)) {
 
                     if (fromPosition == 0 || toPosition == 0) {
                       // fix for weird scrolling when animating first item
                       recyclerView.scrollToPosition(0);
                     }
-
                  //   recyclerView.post(new Runnable() {
                     //@Override public void run() {
                         adapter.notifyItemMoved(fromPosition, toPosition);
@@ -92,7 +110,12 @@ final class DragManager implements View.OnDragListener {
         lastDragInfo = dragInfo;
         lastDragInfo.setDragPoint(x, y);
 
-        adapter.handleDragScroll(recyclerView, dragInfo);
+
+
+        if(dragInfo.isEligibleForScroll(recyclerView.getWidth())){
+          Log.i("DragManager", "onDrag " + "delay");
+                nextPageHandler.postDelayed(runnable, 500);
+        }
         break;
 
       case DragEvent.ACTION_DRAG_ENDED:
@@ -135,7 +158,8 @@ final class DragManager implements View.OnDragListener {
         break;
       case DragEvent.ACTION_DRAG_EXITED:
         // TODO edge scrolling
-        ((DraggableRecyclerPagerView) recyclerView).scrollNextPage();
+   //    ((DraggableRecyclerPagerView) recyclerView).scrollNextPage();
+       // Log.e("DragManager", "onDrag" + event.getX());
         break;
     }
     return true;
@@ -147,5 +171,6 @@ final class DragManager implements View.OnDragListener {
 
   long getDraggingId() { return draggingId; }
 
-  @Nullable DragInfo getLastDragInfo() { return lastDragInfo; }
+  @Nullable
+  DragInfo getLastDragInfo() { return lastDragInfo; }
 }

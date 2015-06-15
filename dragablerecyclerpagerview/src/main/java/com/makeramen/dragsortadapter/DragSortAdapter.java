@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package dragsortadapter;
+package com.makeramen.dragsortadapter;
 
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -36,6 +37,8 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
   private final DragManager dragManager;
   private int scrollState = RecyclerView.SCROLL_STATE_IDLE;
   private final PointF lastTouchPoint = new PointF(); // used to create ShadowBuilder
+  protected boolean canMove = true;
+  private Handler handler;
 
   public DragSortAdapter(RecyclerView recyclerView) {
     setHasStableIds(true);
@@ -65,7 +68,7 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
         scrollState = newState;
         switch (newState) {
           case RecyclerView.SCROLL_STATE_IDLE:
-            handleScroll(recyclerView);
+         //   handleScroll(recyclerView);
             break;
           case RecyclerView.SCROLL_STATE_DRAGGING:
           case RecyclerView.SCROLL_STATE_SETTLING:
@@ -73,6 +76,9 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
         }
       }
     });
+
+    handler = new Handler();
+
   }
 
   /**
@@ -116,35 +122,26 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
     }
     DragInfo lastDragInfo = dragManager.getLastDragInfo();
     if (lastDragInfo != null) {
-      handleDragScroll(recyclerView, lastDragInfo);
+     // handleDragScroll(recyclerView, lastDragInfo);
     }
   }
 
-  void handleDragScroll(RecyclerView rv, DragInfo dragInfo) {
-    if (dragInfo.shouldScrollLeft()) Log.e("scrollando", "mcho?");
-
+  void handleDragScroll(final RecyclerView rv, final DragInfo dragInfo) {
+  Log.e("DragSortAdapter", "handleDragScroll" +"runing");
     if (rv.getLayoutManager().canScrollHorizontally()) {
-      if (rv.canScrollHorizontally(-1) && dragInfo.shouldScrollLeft()) {
-  //      rv.scrollBy(-SCROLL_AMOUNT, 0);
-      ///  ((DraggableRecyclerPagerView) rv).scrollPreviousPage();
-        dragManager.clearNextMove();
-      } else if (rv.canScrollHorizontally(1) && dragInfo.shouldScrollRight(rv.getWidth())) {
-     //   rv.scrollBy(SCROLL_AMOUNT, 0);
+      if (dragInfo.shouldScrollLeft()) {
+        ((DraggableRecyclerPagerView) rv).scrollPreviousPage();
 
-      //  ((DraggableRecyclerPagerView) rv).scrollNextPage();
         dragManager.clearNextMove();
-      }
-    } else if (rv.getLayoutManager().canScrollVertically()) {
-      if (rv.canScrollVertically(-1) && dragInfo.shouldScrollUp()) {
-//        rv.scrollBy(-SCROLL_AMOUNT, 0);
-       // ((DraggableRecyclerPagerView) rv).scrollPreviousPage();
-        dragManager.clearNextMove();
-      } else if (rv.canScrollVertically(1) && dragInfo.shouldScrollDown(rv.getHeight())) {
-       // ((DraggableRecyclerPagerView) rv).scrollNextPage();
-//        rv.scrollBy(SCROLL_AMOUNT, 0);
+      } else if (dragInfo.shouldScrollRight(rv.getWidth())) {
+       ((DraggableRecyclerPagerView) rv).scrollNextPage();
         dragManager.clearNextMove();
       }
     }
+  }
+
+  public void setCanMove(boolean canMove) {
+    this.canMove = canMove;
   }
 
   public static abstract class ViewHolder extends RecyclerView.ViewHolder {
@@ -177,6 +174,7 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
           new DragInfo(getItemId(), shadowSize, shadowTouchPoint, adapter.getLastTouchPoint()), 0);
 
       adapter.notifyItemChanged(getAdapterPosition());
+
     }
   }
 }

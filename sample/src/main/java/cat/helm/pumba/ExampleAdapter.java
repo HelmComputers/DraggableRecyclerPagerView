@@ -24,14 +24,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import dragsortadapter.DragSortAdapter;
-import dragsortadapter.NoForegroundShadowBuilder;
-
-import java.util.List;
-
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import com.makeramen.dragsortadapter.DragSortAdapter;
+import com.makeramen.dragsortadapter.NoForegroundShadowBuilder;
+
+import java.util.List;
 
 public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolder> {
 
@@ -74,8 +72,8 @@ public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolde
   }
 
   @Override public boolean move(int fromPosition, int toPosition) {
-    data.add(toPosition, data.remove(fromPosition));
-    return true;
+    if(canMove) data.add(toPosition, data.remove(fromPosition));
+    return canMove;
   }
 
   static class MainViewHolder extends DragSortAdapter.ViewHolder implements

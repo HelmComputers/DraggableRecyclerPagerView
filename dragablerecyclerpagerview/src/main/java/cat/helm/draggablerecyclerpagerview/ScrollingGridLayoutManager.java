@@ -47,10 +47,11 @@ public class ScrollingGridLayoutManager extends GridLayoutManager {
             final LayoutParams lp = (LayoutParams) getChildAt(i).getLayoutParams();
             final int viewPosition = lp.getViewLayoutPosition();
         }
+
+
+
     }
 
-    @Override
-    public void measureChild(View child, int widthUsed, int heightUsed) {
-        super.measureChild(child, widthUsed, heightUsed);
-    }
+
+
 }
