@@ -128,6 +128,7 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
 
   void handleDragScroll(final RecyclerView rv, final DragInfo dragInfo) {
   Log.e("DragSortAdapter", "handleDragScroll" +"runing");
+    if(dragInfo == null) return;
     if (rv.getLayoutManager().canScrollHorizontally()) {
       if (dragInfo.shouldScrollLeft()) {
         ((DraggableRecyclerPagerView) rv).scrollPreviousPage();

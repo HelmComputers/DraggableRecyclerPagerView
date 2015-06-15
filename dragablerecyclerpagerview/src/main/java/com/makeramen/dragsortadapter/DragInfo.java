@@ -23,6 +23,10 @@ final class DragInfo {
         return itemId;
     }
 
+    public PointF getDragPoint() {
+        return dragPoint;
+    }
+
     boolean shouldScrollLeft() {
         boolean scrollLeft = dragPoint.x < shadowTouchPoint.x;
         if (scrollLeft) {

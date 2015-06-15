@@ -34,11 +34,9 @@ final class DragManager implements View.OnDragListener {
       Log.i("onDrag", "runing ");
       adapter.handleDragScroll(recyclerViewRef.get(), lastDragInfo);
       nextPageHandler.removeCallbacks(runnable);
-      nextPageHandler.postDelayed(runnable,500);
+      nextPageHandler.postDelayed(runnable, 1000);
     }
   };
-
-
   @Override public boolean onDrag(View v, final DragEvent event) {
     if (v != recyclerViewRef.get() || !(event.getLocalState() instanceof DragInfo)) {
       return false;
@@ -46,6 +44,7 @@ final class DragManager implements View.OnDragListener {
 
     Log.i("DragManager", "onDrag " + "remove");
     lastEvent = event;
+   // nextPageHandler.removeCallbacks(runnable);
 
     final RecyclerView recyclerView = (RecyclerView) v;
     final DragInfo dragInfo = (DragInfo) event.getLocalState();
@@ -63,7 +62,6 @@ final class DragManager implements View.OnDragListener {
 
         int fromPosition = adapter.getPositionForId(itemId);
         int toPosition = -1;
-
         View child = recyclerView.findChildViewUnder(event.getX(), event.getY());
         if (child != null) {
           toPosition = recyclerView.getChildViewHolder(child).getAdapterPosition();
