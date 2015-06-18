@@ -23,6 +23,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     private GestureDetector gestureScanner;
     private int lastVisibleItemPosition;
     private int itemsCount = -1;
+    private Adapter adapter;
 
     public DraggableRecyclerPagerView(Context context) {
         super(context);
@@ -39,8 +40,8 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         init();
     }
 
+
     private void init() {
-        // setChildrenDrawingOrderEnabled(true);
         if (!isInEditMode()) {
             gestureScanner = new GestureDetector(getContext(), this);
         }
@@ -119,9 +120,18 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     public void scrollNextPage() {
         int scrollTo = lastVisibleItemPosition + itemsCount;
         smoothScrollToPosition(scrollTo);
+        if(scrollTo > adapter.getItemCount()){
+            scrollTo = adapter.getItemCount() - 1;
+        }
         lastVisibleItemPosition = scrollTo;
 
-        //   ((PagedLayoutManager) getLayoutManager()).scrollNextPage(this);
+    }
+
+
+    @Override
+    public void setAdapter(Adapter adapter) {
+        super.setAdapter(adapter);
+        this.adapter = adapter;
     }
 
     @Override

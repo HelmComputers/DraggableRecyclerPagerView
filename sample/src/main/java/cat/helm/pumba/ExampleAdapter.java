@@ -30,74 +30,128 @@ import com.makeramen.dragsortadapter.DragSortAdapter;
 import com.makeramen.dragsortadapter.NoForegroundShadowBuilder;
 
 import java.util.List;
+import java.util.Vector;
 
 public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolder> {
 
-  public static final String TAG = ExampleAdapter.class.getSimpleName();
+    public static final String TAG = ExampleAdapter.class.getSimpleName();
+    private final Vector<Integer> integers;
+    private onItemMovedListener listener;
+    private final List<Integer> data;
 
-  private final List<Integer> data;
-
-  public ExampleAdapter(RecyclerView recyclerView, List<Integer> data) {
-    super(recyclerView);
-    this.data = data;
-  }
-
-  @Override public MainViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-    LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-    View view = inflater.inflate(R.layout.item_example, parent, false);
-    MainViewHolder holder = new MainViewHolder(this, view);
-    view.setOnClickListener(holder);
-    view.setOnLongClickListener(holder);
-    return holder;
-  }
-
-  @Override public void onBindViewHolder(final MainViewHolder holder, final int position) {
-    int itemId = data.get(position);
-    holder.text.setText(itemId+"");
-    // NOTE: check for getDraggingId() match to set an "invisible space" while dragging
-    holder.container.setVisibility(getDraggingId() == itemId ? View.INVISIBLE : View.VISIBLE);
-    holder.container.postInvalidate();
-  }
-
-  @Override public long getItemId(int position) {
-    return data.get(position);
-  }
-
-  @Override public int getItemCount() {
-    return data.size();
-  }
-
-  @Override public int getPositionForId(long id) {
-    return data.indexOf((int) id);
-  }
-
-  @Override public boolean move(int fromPosition, int toPosition) {
-    if(canMove) data.add(toPosition, data.remove(fromPosition));
-    return canMove;
-  }
-
-  static class MainViewHolder extends DragSortAdapter.ViewHolder implements
-      View.OnClickListener, View.OnLongClickListener {
-
-    @InjectView(R.id.container) ViewGroup container;
-    @InjectView(R.id.text) TextView text;
-
-    public MainViewHolder(DragSortAdapter adapter, View itemView) {
-      super(adapter, itemView);
-      ButterKnife.inject(this, itemView);
+    public ExampleAdapter(RecyclerView recyclerView, List<Integer> data) {
+        super(recyclerView);
+        this.data = data;
+        int size = data.size() + data.size()%6;
+        integers = new Vector<>(size);
+        for (int i = 0; i < data.size(); i++) {
+            integers.add(i,i);
+        }
     }
 
-    @Override public void onClick(@NonNull View v) {
-      Log.d(TAG, text.getText() + " clicked!");
+    public interface onItemMovedListener {
+
+        void onItemMoved(int fomPosition, int toPosition);
+
     }
 
-    @Override public boolean onLongClick(@NonNull View v) {
-      startDrag();
-      return true;
+    @Override
+    public MainViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View view = inflater.inflate(R.layout.item_example, parent, false);
+        MainViewHolder holder = new MainViewHolder(this, view);
+        view.setOnClickListener(holder);
+        view.setOnLongClickListener(holder);
+        return holder;
     }
 
-    @Override public View.DragShadowBuilder getShadowBuilder(View itemView, Point touchPoint) {
-      return new NoForegroundShadowBuilder(itemView, touchPoint);
+    @Override
+    public void onBindViewHolder(final MainViewHolder holder, final int position) {
+        int itemId = 0;
+        if(position < data.size()) {
+            itemId = integers.get(position);
+            holder.text.setText(data.get(position) + "");
+        }else{
+            integers.get(integers.size()-1);
+            holder.text.setText("relleno");
+            holder.jabber = true;
+        }
+  //      holder.text.setText(data.get(integers.get(position)) + "");
+        // NOTE: check for getDraggingId() match to set an "invisible space" while dragging
+        holder.container.setVisibility(getDraggingId() == itemId ? View.INVISIBLE : View.VISIBLE);
+        holder.container.postInvalidate();
     }
-  }
+
+    @Override
+    public long getItemId(int position) {
+        if(position >= integers.size()){
+            return -1;
+        }
+        return integers.get(position);
+    }
+
+    @Override
+    public int getItemCount() {
+        return data.size()+data.size()%6;
+    }
+
+    @Override
+    public int getPositionForId(long id) {
+        return integers.indexOf((int) id);
+    }
+
+    @Override
+    public boolean move(int fromPosition, int toPosition) {
+        int limit = integers.size();
+        if( fromPosition < limit && toPosition < limit) {
+            if (canMove) {
+                data.add(toPosition, data.remove(fromPosition));
+                integers.add(toPosition, integers.remove(fromPosition));
+
+     /*       if (listener != null) {
+                listener.onItemMoved(fromPosition, toPosition);
+            }
+       */
+            }
+        }else{
+            return false;
+        }
+        return canMove;
+    }
+
+
+    void setOnItemMovedListener(onItemMovedListener listener){
+        this.listener = listener;
+    }
+
+    static class MainViewHolder extends DragSortAdapter.ViewHolder implements
+            View.OnClickListener, View.OnLongClickListener {
+
+        @InjectView(R.id.container)
+        ViewGroup container;
+        @InjectView(R.id.text)
+        TextView text;
+        boolean jabber = false;
+
+        public MainViewHolder(DragSortAdapter adapter, View itemView) {
+            super(adapter, itemView);
+            ButterKnife.inject(this, itemView);
+        }
+
+        @Override
+        public void onClick(@NonNull View v) {
+            Log.d(TAG, text.getText() + " clicked!");
+        }
+
+        @Override
+        public boolean onLongClick(@NonNull View v) {
+            if(! jabber) startDrag();
+            return true;
+        }
+
+        @Override
+        public View.DragShadowBuilder getShadowBuilder(View itemView, Point touchPoint) {
+            return new NoForegroundShadowBuilder(itemView, touchPoint);
+        }
+    }
 }
