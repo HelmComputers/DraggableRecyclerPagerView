@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Integer> createItems() {
         List<Integer> items = new ArrayList<>();
-        for (int i = 0; i < 18; i++) {
+        for (int i = 0; i < 16; i++) {
             items.add(i);
         }
         return items;

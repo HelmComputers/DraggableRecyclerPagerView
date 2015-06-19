@@ -42,7 +42,7 @@ public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolde
     public ExampleAdapter(RecyclerView recyclerView, List<Integer> data) {
         super(recyclerView);
         this.data = data;
-        int size = data.size() + data.size()%6;
+        int size = data.size() +(6 - data.size()%6);
         integers = new Vector<>(size);
         for (int i = 0; i < data.size(); i++) {
             integers.add(i,i);
@@ -71,6 +71,8 @@ public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolde
         if(position < data.size()) {
             itemId = integers.get(position);
             holder.text.setText(data.get(position) + "");
+            holder.jabber = false;
+
         }else{
             integers.get(integers.size()-1);
             holder.text.setText("relleno");
@@ -92,7 +94,7 @@ public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolde
 
     @Override
     public int getItemCount() {
-        return data.size()+data.size()%6;
+        return data.size() +(6 - data.size()%6);
     }
 
     @Override

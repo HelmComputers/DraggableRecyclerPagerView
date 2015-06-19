@@ -90,7 +90,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     private void reverseScroll() {
         if (getScrollDirection() == LEFT) {
             smoothScrollToPosition(lastVisibleItemPosition);
-        } else {
+        } else if(lastVisibleItemPosition != adapter.getItemCount() -1){
             smoothScrollToPosition(lastVisibleItemPosition);
             Rect r = new Rect();
             View view = getChildAt(itemsCount + 1);
@@ -119,9 +119,11 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
 
     public void scrollNextPage() {
         int scrollTo = lastVisibleItemPosition + itemsCount;
-        smoothScrollToPosition(scrollTo);
         if(scrollTo > adapter.getItemCount()){
             scrollTo = adapter.getItemCount() - 1;
+        }
+        else {
+            smoothScrollToPosition(scrollTo);
         }
         lastVisibleItemPosition = scrollTo;
 
@@ -156,6 +158,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     @Override
     public void onShowPress(MotionEvent e) {
     }
+
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
