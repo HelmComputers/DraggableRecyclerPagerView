@@ -31,7 +31,6 @@ final class DragManager implements View.OnDragListener {
   Runnable runnable = new Runnable() {
     @Override
     public void run() {
-      Log.i("onDrag", "runing ");
       adapter.handleDragScroll(recyclerViewRef.get(), lastDragInfo);
       nextPageHandler.removeCallbacks(runnable);
       nextPageHandler.postDelayed(runnable, 1000);
@@ -42,7 +41,6 @@ final class DragManager implements View.OnDragListener {
       return false;
     }
 
-    Log.i("DragManager", "onDrag " + "remove");
     lastEvent = event;
    // nextPageHandler.removeCallbacks(runnable);
 
@@ -111,7 +109,6 @@ final class DragManager implements View.OnDragListener {
 
 
         if(dragInfo.isEligibleForScroll(recyclerView.getWidth())){
-          Log.i("DragManager", "onDrag " + "delay");
                 nextPageHandler.postDelayed(runnable, 500);
         }
         break;
@@ -155,6 +152,7 @@ final class DragManager implements View.OnDragListener {
         // probably not used?
         break;
       case DragEvent.ACTION_DRAG_EXITED:
+        Log.e("DragManager", "onDrag" + "ONDRAGEXITED");
         // TODO edge scrolling
    //    ((DraggableRecyclerPagerView) recyclerView).scrollNextPage();
        // Log.e("DragManager", "onDrag" + event.getX());

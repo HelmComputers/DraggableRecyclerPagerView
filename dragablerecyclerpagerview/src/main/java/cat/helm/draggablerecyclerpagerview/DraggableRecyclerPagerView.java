@@ -55,7 +55,6 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
                 if (!specialEventUsed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
                     float lastScrolledXAbs = Math.abs(lastScrolledX);
                     if (lastScrolledXAbs <= getMeasuredWidth() / 3) {
-                        reverseScroll();
                     } else {
                         scrollToPage();
                     }

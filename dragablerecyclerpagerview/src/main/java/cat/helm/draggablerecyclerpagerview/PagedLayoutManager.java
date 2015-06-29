@@ -389,6 +389,11 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
         }else {
             firstVisibleItem = position;
         }
+
+        if(firstVisibleItem < 0) {
+            firstVisibleItem = 0;
+            ((DragSortAdapter) recyclerView.getAdapter()).setCanMove(true);
+        }
     }
 
 

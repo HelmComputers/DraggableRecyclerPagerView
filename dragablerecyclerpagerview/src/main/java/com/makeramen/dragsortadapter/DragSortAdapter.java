@@ -42,7 +42,6 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
 
   public DragSortAdapter(RecyclerView recyclerView) {
     setHasStableIds(true);
-
     dragManager = new DragManager(recyclerView, this);
     recyclerView.setOnDragListener(dragManager);
 

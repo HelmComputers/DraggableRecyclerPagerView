@@ -1,16 +1,35 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context="cat.helm.pumba.MainActivity"
-    >
+                android:padding="16dp"
+                android:background="@android:color/black"
+                android:layout_height="match_parent">
 
+    <TextView
+            android:id="@+id/select_button"
+            android:text="@string/select"
+            style="@style/project_manager_buttons"/>
 
-    <view
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+    <TextView
+            android:id="@+id/delete_button"
+            android:layout_toRightOf="@id/select_button"
+            android:text="delete"
+            android:visibility="invisible"
+            style="@style/project_manager_buttons"/>
+
+    <TextView
+            android:id="@+id/new_project_button"
+            android:paddingRight="16dp"
+            android:text="New Project"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            style="@style/project_manager_buttons"
+            />
+
+    <cat.helm.draggablerecyclerpagerview.DraggableRecyclerPagerView
+            android:layout_below="@id/select_button"
             android:layout_margin="16dp"
-            class="cat.helm.draggablerecyclerpagerview.DraggableRecyclerPagerView"
             android:id="@+id/recycler"
-        />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
 </RelativeLayout>
