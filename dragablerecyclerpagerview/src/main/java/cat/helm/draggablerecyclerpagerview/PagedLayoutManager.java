@@ -229,7 +229,6 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
                                             startOffsetTop + decoratedChildHeight);
 
             } else {
-                if (nextPosition == 11) ;
                 attachView(view);
                 viewCache.remove(nextPosition);
             }

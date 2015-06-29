@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -55,6 +56,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
                 if (!specialEventUsed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
                     float lastScrolledXAbs = Math.abs(lastScrolledX);
                     if (lastScrolledXAbs <= getMeasuredWidth() / 3) {
+                        reverseScroll();
                     } else {
                         scrollToPage();
                     }
@@ -147,6 +149,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         if(state == SCROLL_STATE_IDLE ) {
             ((DragSortAdapter) getAdapter()).setCanMove(true);
         }
+        Log.e(":D", "onScrollStateChanged" + state);
     }
 
     @Override
@@ -207,7 +210,9 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         if (e.getAction() == MotionEvent.ACTION_DOWN) {
             lastScrolledX = e.getX();
         }
-        return super.onInterceptTouchEvent(e);
+        if(e.getAction() == MotionEvent.ACTION_MOVE) return true;
+        super.onInterceptTouchEvent(e);
+        return false;
     }
 
     @Override
