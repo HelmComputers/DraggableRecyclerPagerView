@@ -110,7 +110,7 @@ final class DragManager implements View.OnDragListener {
                 lastDragInfo = dragInfo;
                 lastDragInfo.setDragPoint(x, y);
 
-                if(viewGroup != null)viewGroup.get().onDraggingViewMoved(v, itemId);
+                if(viewGroup.get() != null)viewGroup.get().onDraggingViewMoved(v, itemId);
                 if (dragInfo.isEligibleForScroll(recyclerView.getWidth())) {
                     nextPageHandler.postDelayed(runnable, 500);
                 }

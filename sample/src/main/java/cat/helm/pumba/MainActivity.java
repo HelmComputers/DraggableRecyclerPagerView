@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.inject(this);
         List<Integer> items = createItems();
         PagedLayoutManager gridLayoutManager = new PagedLayoutManager(this, 2, 3);
-        ExampleAdapter adapter = new ExampleAdapter(viewGroup, draggableRecyclerPagerView, items);
+        ExampleAdapter adapter = new ExampleAdapter(null,draggableRecyclerPagerView, items);
         draggableRecyclerPagerView.setLayoutManager(gridLayoutManager);
         draggableRecyclerPagerView.setAdapter(adapter);
         draggableRecyclerPagerView.addItemDecoration(new InsetDecoration(this));
