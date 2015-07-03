@@ -42,6 +42,52 @@ public abstract class DragSortAdapter<VH extends DragSortAdapter.ViewHolder>
     protected boolean canMove = true;
     private Handler handler;
 
+    public DragSortAdapter(RecyclerView recyclerView) {
+        setHasStableIds(true);
+        dragManager = new DragManager(null, recyclerView, this);
+        recyclerView.setOnDragListener(dragManager);
+
+        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                lastTouchPoint.set(e.getX(), e.getY());
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+            }
+        });
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(final RecyclerView recyclerView, int dx, int dy) {
+                recyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleScroll(recyclerView);
+                    }
+                });
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                scrollState = newState;
+                switch (newState) {
+                    case RecyclerView.SCROLL_STATE_IDLE:
+                        //   handleScroll(recyclerView);
+                        break;
+                    case RecyclerView.SCROLL_STATE_DRAGGING:
+                    case RecyclerView.SCROLL_STATE_SETTLING:
+                        break;
+                }
+            }
+        });
+
+        handler = new Handler();
+
+    }
+
     public DragSortAdapter(OverlappingObservableViewGroup viewGroup, RecyclerView recyclerView) {
         setHasStableIds(true);
         dragManager = new DragManager(viewGroup, recyclerView, this);
