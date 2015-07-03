@@ -7,6 +7,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.TextView;
+import cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup;
 
 import java.lang.ref.WeakReference;
 
@@ -14,159 +17,173 @@ import static java.lang.Float.MIN_VALUE;
 
 final class DragManager implements View.OnDragListener {
 
-  private final WeakReference<RecyclerView> recyclerViewRef;
-  private final DragSortAdapter<?> adapter;
-  private long draggingId = RecyclerView.NO_ID;
-  private final PointF nextMoveTouchPoint = new PointF(MIN_VALUE, MIN_VALUE);
-  @Nullable private DragInfo lastDragInfo;
+    private final WeakReference<RecyclerView> recyclerViewRef;
+    private final DragSortAdapter<?> adapter;
+    private final WeakReference<OverlappingObservableViewGroup> viewGroup;
+    private long draggingId = RecyclerView.NO_ID;
+    private final PointF nextMoveTouchPoint = new PointF(MIN_VALUE, MIN_VALUE);
+    @Nullable
+    private DragInfo lastDragInfo;
 
-  public DragManager(RecyclerView recyclerView, DragSortAdapter<?> adapter) {
-    this.recyclerViewRef = new WeakReference<>(recyclerView);
-    this.adapter = adapter;
-  }
-
-
-  DragEvent lastEvent;
-  Handler nextPageHandler = new Handler();
-  Runnable runnable = new Runnable() {
-    @Override
-    public void run() {
-      adapter.handleDragScroll(recyclerViewRef.get(), lastDragInfo);
-      nextPageHandler.removeCallbacks(runnable);
-      nextPageHandler.postDelayed(runnable, 1000);
-    }
-  };
-  @Override public boolean onDrag(View v, final DragEvent event) {
-    if (v != recyclerViewRef.get() || !(event.getLocalState() instanceof DragInfo)) {
-      return false;
+    public DragManager(OverlappingObservableViewGroup viewGroup, RecyclerView recyclerView, DragSortAdapter<?> adapter) {
+        this.recyclerViewRef = new WeakReference<>(recyclerView);
+        this.viewGroup = new WeakReference<>(viewGroup);
+        this.adapter = adapter;
     }
 
-    lastEvent = event;
-   // nextPageHandler.removeCallbacks(runnable);
 
-    final RecyclerView recyclerView = (RecyclerView) v;
-    final DragInfo dragInfo = (DragInfo) event.getLocalState();
-    final long itemId = dragInfo.itemId();
-
-    switch (event.getAction()) {
-      case DragEvent.ACTION_DRAG_STARTED:
-        draggingId = itemId;
-          adapter.notifyItemChanged(recyclerView.findViewHolderForItemId(itemId).getAdapterPosition());
-        break;
-
-      case DragEvent.ACTION_DRAG_LOCATION:
-        float x = event.getX();
-        float y = event.getY();
-
-        int fromPosition = adapter.getPositionForId(itemId);
-        int toPosition = -1;
-        View child = recyclerView.findChildViewUnder(event.getX(), event.getY());
-        if (child != null) {
-          toPosition = recyclerView.getChildViewHolder(child).getAdapterPosition();
+    DragEvent lastEvent;
+    Handler nextPageHandler = new Handler();
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            adapter.handleDragScroll(recyclerViewRef.get(), lastDragInfo);
+            nextPageHandler.removeCallbacks(runnable);
+            nextPageHandler.postDelayed(runnable, 1000);
         }
+    };
 
-        if (toPosition >= 0 && fromPosition != toPosition) {
-          RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
+    @Override
+    public boolean onDrag(View v, final DragEvent event) {
+        if (v != recyclerViewRef.get() || !(event.getLocalState() instanceof DragInfo)) {
+            return false;
+        }
+        lastEvent = event;
 
-          boolean scheduleNextMove = nextMoveTouchPoint.equals(MIN_VALUE, MIN_VALUE);
-          nextMoveTouchPoint.set(x, y);
+        final RecyclerView recyclerView = (RecyclerView) v;
+        final DragInfo dragInfo = (DragInfo) event.getLocalState();
+        final long itemId = dragInfo.itemId();
 
-          if (scheduleNextMove)
-            animator.isRunning(new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
-              @Override public void onAnimationsFinished() {
-                if (nextMoveTouchPoint.equals(MIN_VALUE, MIN_VALUE)) { return; }
+        switch (event.getAction()) {
+            case DragEvent.ACTION_DRAG_STARTED:
+                draggingId = itemId;
+                CharSequence text = ((TextView) ((FrameLayout) recyclerView.findViewHolderForItemId(itemId).itemView).getChildAt(0)).getText();
+                adapter.notifyItemChanged(recyclerView.findViewHolderForItemId(itemId).getAdapterPosition());
+                break;
+            case DragEvent.ACTION_DRAG_LOCATION:
+                float x = event.getX();
+                float y = event.getY();
 
-                final int fromPosition = adapter.getPositionForId(itemId);
-
-                View child = recyclerView
-                    .findChildViewUnder(nextMoveTouchPoint.x, nextMoveTouchPoint.y);
+                int fromPosition = adapter.getPositionForId(itemId);
+                int toPosition = -1;
+                View child = recyclerView.findChildViewUnder(event.getX(), event.getY());
                 if (child != null) {
-                  final int toPosition =
-                      recyclerView.getChildViewHolder(child).getAdapterPosition();
-                 if (adapter.move(fromPosition, toPosition)) {
-
-                    if (fromPosition == 0 || toPosition == 0) {
-                      // fix for weird scrolling when animating first item
-                      recyclerView.scrollToPosition(0);
-                    }
-                 //   recyclerView.post(new Runnable() {
-                    //@Override public void run() {
-                        adapter.notifyItemMoved(fromPosition, toPosition);
-                      //}
-                    //});
-                  }
+                    toPosition = recyclerView.getChildViewHolder(child).getAdapterPosition();
                 }
 
-                // reset so we know to schedule listener again next time
-                clearNextMove();
-              }
-            });
+                if (toPosition >= 0 && fromPosition != toPosition) {
+                    RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
+
+                    boolean scheduleNextMove = nextMoveTouchPoint.equals(MIN_VALUE, MIN_VALUE);
+                    nextMoveTouchPoint.set(x, y);
+
+                    if (scheduleNextMove)
+                        animator.isRunning(new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
+                            @Override
+                            public void onAnimationsFinished() {
+                                if (nextMoveTouchPoint.equals(MIN_VALUE, MIN_VALUE)) {
+                                    return;
+                                }
+
+                                final int fromPosition = adapter.getPositionForId(itemId);
+
+                                View child = recyclerView
+                                        .findChildViewUnder(nextMoveTouchPoint.x, nextMoveTouchPoint.y);
+                                if (child != null) {
+                                    final int toPosition =
+                                            recyclerView.getChildViewHolder(child).getAdapterPosition();
+                                    if (adapter.move(fromPosition, toPosition)) {
+
+                                        if (fromPosition == 0 || toPosition == 0) {
+                                            // fix for weird scrolling when animating first item
+                                            recyclerView.scrollToPosition(0);
+                                        }
+
+                                        adapter.notifyItemMoved(fromPosition, toPosition);
+
+                                    }
+                                }
+
+                                // reset so we know to schedule listener again next time
+                                clearNextMove();
+                            }
+                        });
+                }
+
+                lastDragInfo = dragInfo;
+                lastDragInfo.setDragPoint(x, y);
+
+                viewGroup.get().onDraggingViewMoved(v, itemId);
+                if (dragInfo.isEligibleForScroll(recyclerView.getWidth())) {
+                    nextPageHandler.postDelayed(runnable, 500);
+                }
+                break;
+
+            case DragEvent.ACTION_DRAG_ENDED:
+                draggingId = RecyclerView.NO_ID;
+                dragEnded(recyclerView, itemId);
+                break;
+
+            case DragEvent.ACTION_DROP:
+                adapter.onDrop();
+                break;
+
+            case DragEvent.ACTION_DRAG_ENTERED:
+                // probably not used?
+                break;
+            case DragEvent.ACTION_DRAG_EXITED:
+                Log.e("DragManager", "onDrag" + "ONDRAGEXITED");
+                // TODO edge scrolling
+                //((DraggableRecyclerPagerView) recyclerView).scrollNextPage();
+                // Log.e("DragManager", "onDrag" + event.getX());
+                break;
         }
+        return true;
+    }
 
-        lastDragInfo = dragInfo;
-        lastDragInfo.setDragPoint(x, y);
-
-
-
-        if(dragInfo.isEligibleForScroll(recyclerView.getWidth())){
-                nextPageHandler.postDelayed(runnable, 500);
-        }
-        break;
-
-      case DragEvent.ACTION_DRAG_ENDED:
-        draggingId = RecyclerView.NO_ID;
+    private void dragEnded(final RecyclerView recyclerView, final long itemId) {
         lastDragInfo = null;
 
         // queue up the show animation until after all move animations are finished
         recyclerView.getItemAnimator().isRunning(
-            new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
-              @Override public void onAnimationsFinished() {
-                int position = adapter.getPositionForId(itemId);
+                new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
+                    @Override
+                    public void onAnimationsFinished() {
+                        int position = adapter.getPositionForId(itemId);
 
-                RecyclerView.ViewHolder vh = recyclerView.findViewHolderForItemId(itemId);
-                if (vh != null && vh.getAdapterPosition() != position) {
-                  // if positions don't match, there's still an outstanding move animation
-                  // so we try to reschedule the notifyItemChanged until after that
-                  recyclerView.post(new Runnable() {
-                    @Override public void run() {
-                      recyclerView.getItemAnimator().isRunning(
-                          new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
-                            @Override public void onAnimationsFinished() {
-                              adapter.notifyItemChanged(adapter.getPositionForId(itemId));
-                            }
-                          });
+                        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForItemId(itemId);
+                        if (vh != null && vh.getAdapterPosition() != position) {
+                            // if positions don't match, there's still an outstanding move animation
+                            // so we try to reschedule the notifyItemChanged until after that
+                            recyclerView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    recyclerView.getItemAnimator().isRunning(
+                                            new RecyclerView.ItemAnimator.ItemAnimatorFinishedListener() {
+                                                @Override
+                                                public void onAnimationsFinished() {
+                                                    adapter.notifyItemChanged(adapter.getPositionForId(itemId));
+                                                }
+                                            });
+                                }
+                            });
+                        } else {
+                            adapter.notifyItemChanged(adapter.getPositionForId(itemId));
+                        }
                     }
-                  });
-                } else {
-                  adapter.notifyItemChanged(adapter.getPositionForId(itemId));
-                }
-              }
-            });
-        break;
-
-      case DragEvent.ACTION_DROP:
-        adapter.onDrop();
-        break;
-
-      case DragEvent.ACTION_DRAG_ENTERED:
-        // probably not used?
-        break;
-      case DragEvent.ACTION_DRAG_EXITED:
-        Log.e("DragManager", "onDrag" + "ONDRAGEXITED");
-        // TODO edge scrolling
-   //    ((DraggableRecyclerPagerView) recyclerView).scrollNextPage();
-       // Log.e("DragManager", "onDrag" + event.getX());
-        break;
+                });
     }
-    return true;
-  }
 
-  void clearNextMove() {
-    nextMoveTouchPoint.set(MIN_VALUE, MIN_VALUE);
-  }
+    void clearNextMove() {
+        nextMoveTouchPoint.set(MIN_VALUE, MIN_VALUE);
+    }
 
-  long getDraggingId() { return draggingId; }
+    long getDraggingId() {
+        return draggingId;
+    }
 
-  @Nullable
-  DragInfo getLastDragInfo() { return lastDragInfo; }
+    @Nullable
+    DragInfo getLastDragInfo() {
+        return lastDragInfo;
+    }
 }

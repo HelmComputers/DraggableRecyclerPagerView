@@ -1,7 +1,9 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup
+               xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:padding="16dp"
                 android:background="@android:color/black"
+                android:id="@+id/parent_view_group"
                 android:layout_height="match_parent">
 
     <TextView
@@ -32,4 +34,4 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-</RelativeLayout>
+</cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup>

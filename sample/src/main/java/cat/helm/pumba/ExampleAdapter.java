@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup;
 import com.makeramen.dragsortadapter.DragSortAdapter;
 import com.makeramen.dragsortadapter.NoForegroundShadowBuilder;
 
@@ -39,8 +40,8 @@ public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolde
     private onItemMovedListener listener;
     private final List<Integer> data;
 
-    public ExampleAdapter(RecyclerView recyclerView, List<Integer> data) {
-        super(recyclerView);
+    public ExampleAdapter(OverlappingObservableViewGroup viewGroup, RecyclerView recyclerView, List<Integer> data) {
+        super(viewGroup, recyclerView);
         this.data = data;
         int size = data.size() +(6 - data.size()%6);
         integers = new Vector<>(size);
@@ -134,6 +135,7 @@ public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolde
         @InjectView(R.id.text)
         TextView text;
         boolean jabber = false;
+        private NoForegroundShadowBuilder noForegroundShadowBuilder;
 
         public MainViewHolder(DragSortAdapter adapter, View itemView) {
             super(adapter, itemView);
@@ -153,7 +155,9 @@ public class ExampleAdapter extends DragSortAdapter<ExampleAdapter.MainViewHolde
 
         @Override
         public View.DragShadowBuilder getShadowBuilder(View itemView, Point touchPoint) {
-            return new NoForegroundShadowBuilder(itemView, touchPoint);
+          if(noForegroundShadowBuilder == null)  this.noForegroundShadowBuilder = new NoForegroundShadowBuilder(itemView, touchPoint);
+            NoForegroundShadowBuilder noForegroundShadowBuilder = this.noForegroundShadowBuilder;
+            return noForegroundShadowBuilder;
         }
     }
 }
