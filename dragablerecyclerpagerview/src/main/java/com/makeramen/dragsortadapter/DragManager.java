@@ -7,8 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 import cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup;
 
 import java.lang.ref.WeakReference;
@@ -57,7 +55,6 @@ final class DragManager implements View.OnDragListener {
         switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
                 draggingId = itemId;
-                CharSequence text = ((TextView) ((FrameLayout) recyclerView.findViewHolderForItemId(itemId).itemView).getChildAt(0)).getText();
                 adapter.notifyItemChanged(recyclerView.findViewHolderForItemId(itemId).getAdapterPosition());
                 break;
             case DragEvent.ACTION_DRAG_LOCATION:
