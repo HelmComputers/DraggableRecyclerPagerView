@@ -9,7 +9,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,6 +24,8 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
     private int lastVisibleItemPosition;
     private int itemsCount = -1;
     private Adapter adapter;
+    private int columns;
+    private int rows;
 
     public DraggableRecyclerPagerView(Context context) {
         super(context);
@@ -55,7 +56,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
                 if (lastScrolledX == 0.0) return false;
                 if (!specialEventUsed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
                     float lastScrolledXAbs = Math.abs(lastScrolledX);
-                    if (lastScrolledXAbs <= getMeasuredWidth() / 3) {
+                    if (lastScrolledXAbs <= getMeasuredWidth() / columns) {
                         reverseScroll();
                     } else {
                         scrollToPage();
@@ -79,12 +80,9 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
 
     private void setUpItemsCount() {
         if (itemsCount == -1) {
-          /*  itemsCount = ((ScrollingGridLayoutManager) getLayoutManager()).getColumnCount();
-            itemsCount *= ((ScrollingGridLayoutManager) getLayoutManager()).getRowCount();
-            lastVisibleItemPosition = itemsCount - 1;
-        }*/
-            lastVisibleItemPosition = 6 - 1;
-            itemsCount = 6;
+            itemsCount = rows * columns;
+            lastVisibleItemPosition = rows * columns - 1;
+
         }
     }
 
@@ -149,7 +147,6 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         if(state == SCROLL_STATE_IDLE ) {
             ((DragSortAdapter) getAdapter()).setCanMove(true);
         }
-        Log.e(":D", "onScrollStateChanged" + state);
     }
 
     @Override
@@ -217,8 +214,14 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
 
     @Override
     public void setLayoutManager(LayoutManager layout) {
-        super.setLayoutManager(layout);
-        setUpItemsCount();
+        if(layout instanceof PagedLayoutManager) {
+            super.setLayoutManager(layout);
+            columns = ((PagedLayoutManager) layout).getColumns();
+            rows = ((PagedLayoutManager) layout).getRows();
+            setUpItemsCount();
+        }else {
+            throw new IllegalArgumentException("LayoutManager must be an instance of PagedLayoutManager");
+        }
     }
 
 

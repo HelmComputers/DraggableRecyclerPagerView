@@ -10,7 +10,6 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearSmoothScroller;
-import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -29,11 +28,9 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
     private final int itemsPerPage;
     private int decoratedChildWidth;
     private int decoratedChildHeight;
-    private int visibleColumCount;
+    private int visibleColumnCount;
     private int visibleRowCount;
     private int firstVisiblePosition = 0;
-    private OrientationHelper orientationHelper;
-    private int dx;
     private int firstVisibleItem = 0;
 
     public PagedLayoutManager(@NonNull Context context, int rowCount, int columnCount) {
@@ -75,14 +72,23 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
         return lp instanceof LayoutParams;
     }
 
+    public int getColumns() {
+        return columnCount;
+    }
+
+    public int getColumnCount() {
+        return columnCount;
+    }
+
+
+    public int getRows() {
+        return rowCount;
+    }
 
 
     public static class LayoutParams extends RecyclerView.LayoutParams {
 
-        //Current row in the grid
-        public int row;
-        //Current column in the grid
-        public int column;
+
         public int insetRight;
         public int insetLef;
 
@@ -103,34 +109,29 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
             super(source);
         }
 
-        public LayoutParams(RecyclerView.LayoutParams source) {
-            super(source);
-        }
     }
 
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
 
         View scrap = recycler.getViewForPosition(0);
-       // addView(scrap);
         measureChildWithMargins(scrap, 0, 0);
 
         decoratedChildWidth = getDecoratedMeasuredWidth(scrap);
         decoratedChildHeight = getDecoratedMeasuredHeight(scrap);
-//        detachAndScrapView(scrap, recycler);
         firstVisiblePosition = firstVisibleItem;
 
         updateWindowSpace();
         detachAndScrapAttachedViews(recycler);
-        fillGrid(DIRECTION_NONE, state, recycler);
+        fillGrid(DIRECTION_NONE, recycler);
     }
 
     //region UpdateWindowSpace related functions
     private void updateWindowSpace() {
-        visibleColumCount = (getHorizontalSpace() / decoratedChildWidth);
+        visibleColumnCount = (getHorizontalSpace() / decoratedChildWidth);
 
-        if (visibleColumCount > getTotalColumnCount()) {
-            visibleColumCount = getTotalColumnCount();
+        if (visibleColumnCount > getTotalColumnCount()) {
+            visibleColumnCount = getTotalColumnCount();
         }
 
         visibleRowCount = (getVerticalSpace() / decoratedChildHeight);
@@ -169,16 +170,14 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
 
 
     //region fillGrid related functions
-    private void fillGrid(int direction, RecyclerView.State state, RecyclerView.Recycler recycler) {
+    private void fillGrid(int direction, RecyclerView.Recycler recycler) {
         if (firstVisiblePosition < 0) firstVisiblePosition = 0;
         if (firstVisiblePosition >= getItemCount()) firstVisiblePosition = (getItemCount() - 1);
         SparseArray<View> viewCache = new SparseArray<View>(getChildCount());
         int startLeftOffset = getPaddingLeft();
-        int startTopOffset = getPaddingTop();
         if (getChildCount() != 0) {
             final View topView = getChildAt(0);
             startLeftOffset = getDecoratedLeft(topView);
-            startTopOffset = getDecoratedTop(topView);
             switch (direction) {
                 case DIRECTION_START:
                     startLeftOffset -= decoratedChildWidth;
@@ -198,18 +197,16 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
         }
         switch (direction) {
             case DIRECTION_START:
-                firstVisiblePosition -= 2;
+                firstVisiblePosition -= rowCount;
                 break;
             case DIRECTION_END:
-                firstVisiblePosition += 2;
+                firstVisiblePosition += rowCount;
                 break;
         }
 
 
 
-        int leftOffset = startLeftOffset;
-        int topOffset = startTopOffset;
-        int drawingChild = 12;
+        int drawingChild = rowCount * columnCount * 2;
         final View topView = getChildAt(0);
         for (int i = 0; i < drawingChild; i++) {
             int nextPosition = getPositionForIndex(i);
@@ -219,7 +216,7 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
                     view = recycler.getViewForPosition(nextPosition);
                     addView(view);
                     measureChildWithMargins(view, 0, 0);
-                    int startOffsetLeft = getStartOffsetLefForIndex(nextPosition, topView);
+                    int startOffsetLeft = getStartOffsetLefForIndex(nextPosition);
                     int startOffsetTop = getStartOffsetTopForIndex(nextPosition, view);
                     startOffsetLeft += startLeftOffset;
                                     layoutDecorated(view,
@@ -245,25 +242,21 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
 
     private int getPositionForIndex(int i) {
         i += firstVisiblePosition;
-        if (i % 2 == 0) {
-            return i - ((i / 2) % 3);
+        if (i % rowCount == 0) {
+            return i - ((i / rowCount) % columnCount);
         } else {
-            return i + (((i % 3) + 1) % 3);
+            return i + (((i % columnCount) + 1) % columnCount);
         }
-
-
-        //  return firstVisiblePosition + i;
     }
 
-    private int getStartOffsetLefForIndex(int i, View view) {
+    private int getStartOffsetLefForIndex(int i) {
         int currentColumn = getColumnForPosition(i);
-        currentColumn -= firstVisiblePosition / 2;
-        View topView = getChildAt(0);
+        currentColumn -= firstVisiblePosition / rowCount;
+        View view = getChildAt(0);
         int leftOffsetWithoutMargins = currentColumn * decoratedChildWidth;
-        int leftMargin = 0;//(((RecyclerView.LayoutParams) view.getLayoutParams()).leftMargin);
-        int rightMargin = 0;//(((RecyclerView.LayoutParams) view.getLayoutParams()).rightMargin);
-        int x = leftOffsetWithoutMargins + leftMargin + rightMargin; // currentColumn * rightMargin + (currentColumn + 1) * leftMargin;
-        return x;
+        int leftMargin = (((RecyclerView.LayoutParams) view.getLayoutParams()).leftMargin);
+        int rightMargin = (((RecyclerView.LayoutParams) view.getLayoutParams()).rightMargin);
+        return leftOffsetWithoutMargins + leftMargin + rightMargin;
     }
 
     private int getColumnForPosition(int i) {
@@ -294,8 +287,6 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
                 , View.MeasureSpec.EXACTLY);
 
         child.measure(width, height);
-
-
     }
 
     @Override
@@ -311,7 +302,7 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
         View topView = getChildAt(0);
         View bottomView = getChildAt(itemsPerPage-1);
         boolean leftBoundReached = firstVisiblePosition <= 0;
-        boolean rightBoundReached = firstVisiblePosition/2 >= getTotalColumnCount() - columnCount ;
+        boolean rightBoundReached = firstVisiblePosition / rowCount >= getTotalColumnCount() - columnCount ;
         int delta = -dx;
         if (dx > 0) { // Contents are scrolling left
             //Check right bound
@@ -332,15 +323,15 @@ public class PagedLayoutManager extends RecyclerView.LayoutManager {
 
         if (dx > 0) {
             if (getDecoratedRight(topView) < -16) {
-                fillGrid(DIRECTION_END, state, recycler);
+                fillGrid(DIRECTION_END, recycler);
             } else {
-                fillGrid(DIRECTION_NONE, state, recycler);
+                fillGrid(DIRECTION_NONE, recycler);
             }
         } else {
             if (getDecoratedLeft(topView) > 5) {
-                fillGrid(DIRECTION_START, state, recycler);
+                fillGrid(DIRECTION_START, recycler);
             } else {
-                fillGrid(DIRECTION_NONE, state, recycler);
+                fillGrid(DIRECTION_NONE, recycler);
             }
         }
         return -delta;
