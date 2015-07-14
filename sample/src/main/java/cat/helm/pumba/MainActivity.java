@@ -3,13 +3,11 @@ package cat.helm.pumba;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup;
 import cat.helm.draggablerecyclerpagerview.PagedLayoutManager;
 
 import java.util.ArrayList;
@@ -21,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
     @InjectView(R.id.recycler)
     RecyclerView draggableRecyclerPagerView;
     @InjectView(R.id.parent_view_group)
-    OverlappingObservableViewGroup viewGroup;
+    RelativeLayout viewGroup;
     @InjectView(R.id.select_button)
     TextView selectButton;
 
@@ -37,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         draggableRecyclerPagerView.addItemDecoration(new InsetDecoration(this));
 
         ViewTreeObserver vto = viewGroup.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+    /*    vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 Log.e("MainActivity", "onGlobalLayout" + "  ");
@@ -51,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
+*/
 
     }
 

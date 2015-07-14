@@ -7,6 +7,7 @@ package cat.helm.draggablerecyclerpagerview;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -14,13 +15,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import com.makeramen.dragsortadapter.DragSortAdapter;
 
-public class DraggableRecyclerPagerView extends RecyclerView implements GestureDetector.OnGestureListener {
+public class DraggableRecyclerPagerView extends RecyclerView implements RecyclerView.OnItemTouchListener {
 
     public static final int DEFAULT_VELOCITY = 300;
     private static final int LEFT = 0;
     private static final int RIGHT = 1;
     float lastScrolledX;
-    private GestureDetector gestureScanner;
+    private GestureDetectorCompat gestureScanner;
     private int lastVisibleItemPosition;
     private int itemsCount = -1;
     private Adapter adapter;
@@ -45,8 +46,9 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
 
     private void init() {
         if (!isInEditMode()) {
-            gestureScanner = new GestureDetector(getContext(), this);
+            gestureScanner = new GestureDetectorCompat(getContext(), new RecyclerViewOnGestureListener());
         }
+        addOnItemTouchListener(this);
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -149,50 +151,7 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         }
     }
 
-    @Override
-    public boolean onDown(MotionEvent e) {
-        return false;
-    }
 
-    @Override
-    public void onShowPress(MotionEvent e) {
-    }
-
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent e) {
-        return false;
-    }
-
-
-    @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        return false;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if (e1 != null && e2 != null) {
-            float x1, x2;
-            x1 = e1.getX();
-            x2 = e2.getX();
-            if ((x1 - x2) > 0 && velocityX < -DEFAULT_VELOCITY) {
-                scrollNextPage();
-                return true;
-
-            } else if (x1 - x2 < 0 && velocityX > DEFAULT_VELOCITY) {
-                scrollPreviousPage();
-                return true;
-
-            }
-        }
-        return false;
-    }
 
     public int getScrollDirection() {
         if (lastScrolledX < 0) {
@@ -200,16 +159,6 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         } else {
             return RIGHT;
         }
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent e) {
-        if (e.getAction() == MotionEvent.ACTION_DOWN) {
-            lastScrolledX = e.getX();
-        }
-        if(e.getAction() == MotionEvent.ACTION_MOVE) return true;
-        super.onInterceptTouchEvent(e);
-        return false;
     }
 
     @Override
@@ -224,5 +173,66 @@ public class DraggableRecyclerPagerView extends RecyclerView implements GestureD
         }
     }
 
+    @Override
+    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+        if (e.getAction() == MotionEvent.ACTION_DOWN) {
+            lastScrolledX = e.getX();
+        }
+        gestureScanner.onTouchEvent(e);
+        return false;
+    }
 
+    @Override
+    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+      //  gestureScanner.onTouchEvent(e);
+    }
+
+
+    private class RecyclerViewOnGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public void onShowPress(MotionEvent e) {
+        }
+
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            return false;
+        }
+
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent motionEvent) {
+
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            if (e1 != null && e2 != null) {
+                float x1, x2;
+                x1 = e1.getX();
+                x2 = e2.getX();
+                if ((x1 - x2) > 0 && velocityX < -DEFAULT_VELOCITY) {
+                    scrollNextPage();
+                    return true;
+
+                } else if (x1 - x2 < 0 && velocityX > DEFAULT_VELOCITY) {
+                    scrollPreviousPage();
+                    return true;
+
+                }
+            }
+            return false;
+        }
+    }
 }

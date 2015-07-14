@@ -1,10 +1,11 @@
-<cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup
+<RelativeLayout
                xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:padding="16dp"
                 android:background="@android:color/black"
                 android:id="@+id/parent_view_group"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+        >
 
     <TextView
             android:id="@+id/select_button"
@@ -32,6 +33,7 @@
             android:layout_margin="16dp"
             android:id="@+id/recycler"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            />
 
-</cat.helm.OverlapingObservableViewGroup.OverlappingObservableViewGroup>
+</RelativeLayout>
